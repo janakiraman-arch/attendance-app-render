@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <p class="eyebrow">Face Recognition • Realtime</p>
+        <h1>Smart Attendance</h1>
+        <p class="lede">Enroll team members once, then mark attendance automatically with a single click.</p>
+        <div style="margin-top: 15px;">
+          <a href="/dashboard" class="pill" style="text-decoration: none; color: var(--accent); display: inline-block; font-weight: 500;">View Dashboard &rarr;</a>
+        </div>
+      </div>
+      <div class="pill" style="height: fit-content;">Status: <span id="status">idle</span></div>
+    </header>
+
+    <main class="grid">
+      <section class="card video-card">
+        <div class="card-head">
+          <div>
+            <p class="label">Live Camera</p>
+            <p class="sub">Use good lighting and keep the face centered.</p>
+          </div>
+          <div class="actions">
+            <button id="enrollBtn" class="ghost">Enroll Face</button>
+            <button id="checkBtn" class="primary">Check In</button>
+          </div>
+        </div>
+        <div class="video-wrap">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas" hidden></canvas>
+        </div>
+        <p class="hint">If prompted, allow camera access in your browser.</p>
+      </section>
+
+      <section class="card table-card">
+        <div class="card-head">
+          <div>
+            <p class="label">Today</p>
+            <p class="sub">Latest check-ins</p>
+          </div>
+          <button id="refreshBtn" class="ghost">Refresh</button>
+        </div>
+        <table id="attendanceTable">
+          <thead>
+            <tr><th>Name</th><th>Timestamp</th><th>Location</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p class="hint">One entry per person per day.</p>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="/static/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - Smart Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: var(--panel);
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    
+    .stat-value {
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 10px 0;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .nav-btn {
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 24px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(109,211,255,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(109,211,255,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a href="/" class="nav-btn pill" style="color: var(--muted);">&larr; Back to Camera</a>
+    
+    <header style="margin-bottom: 32px">
+      <div>
+        <p class="eyebrow">Analytics Overview</p>
+        <h1>Attendance Dashboard</h1>
+        <p class="lede">View real-time statistics and recent check-ins for all enrolled members.</p>
+      </div>
+    </header>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="label">Total Enrolled</p>
+        <div class="stat-value">{{ total_people }}</div>
+        <p class="sub" style="font-size: 13px; color: var(--muted);">Registered Faces</p>
+      </div>
+      <div class="stat-card">
+        <p class="label">Today's Check-ins</p>
+        <div class="stat-value">{{ today_attendance }}</div>
+        <p class="sub" style="font-size: 13px; color: var(--muted);">Present Today</p>
+      </div>
+      <div class="stat-card">
+        <p class="label">System Status</p>
+        <div class="stat-value" style="font-size: 32px; margin-top: 18px; margin-bottom: 18px; -webkit-text-fill-color: var(--accent-2);">Online</div>
+        <p class="sub" style="font-size: 13px; color: var(--muted);">Running Smoothly</p>
+      </div>
+    </div>
+
+    <main>
+      <section class="card table-card" style="width: 100%">
+        <div class="card-head">
+          <div>
+            <p class="label">Recent Activity</p>
+            <p class="sub">Latest 50 attendance records</p>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Check-in Time</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in recent_records %}
+              <tr>
+                <td style="font-weight: 500;">{{ record[0] }}</td>
+                <td style="color: var(--muted);">{{ record[1].split('T')[1] }}</td>
+                <td style="color: var(--muted);">{{ record[2] }}</td>
+                <td style="color: var(--muted);">{{ record[3] or 'Unknown' }}</td>
+                <td><span class="badge">Present</span></td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--muted); padding: 24px;">No records found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
