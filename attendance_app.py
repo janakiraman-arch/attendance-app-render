@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import List, Tuple
 
 import cv2
+import csv
 import face_recognition
 import numpy as np
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 
 APP_ROOT = Path(__file__).parent
 DB_PATH = APP_ROOT / "attendance.db"
@@ -47,6 +48,11 @@ def ensure_db() -> None:
     # Migrate existing database
     try:
         conn.execute("ALTER TABLE attendance ADD COLUMN location TEXT DEFAULT 'Unknown Location'")
+    except sqlite3.OperationalError:
+        pass
+        
+    try:
+        conn.execute("ALTER TABLE attendance ADD COLUMN check_out_ts TEXT")
     except sqlite3.OperationalError:
         pass
         
@@ -101,7 +107,7 @@ def dashboard():
     
     recent_records = conn.execute(
         """
-        SELECT p.name, a.ts, a.day, a.location
+        SELECT p.name, a.ts, a.day, a.location, a.check_out_ts
         FROM attendance a
         JOIN people p ON a.person_id = p.id
         ORDER BY a.ts DESC
@@ -188,18 +194,32 @@ def recognize():
     name = known_names[best_idx]
 
     location = payload.get("location", "Unknown Location")
+    action = payload.get("action", "check_in")
 
     conn = sqlite3.connect(DB_PATH)
     today = date.today().isoformat()
     timestamp = datetime.now().isoformat(timespec="seconds")
-    conn.execute(
-        "INSERT OR IGNORE INTO attendance(person_id, ts, day, location) VALUES (?, ?, ?, ?)",
-        (person_id, timestamp, today, location),
-    )
+    
+    if action == "check_out":
+        # Check if checked in today
+        check = conn.execute("SELECT id FROM attendance WHERE person_id = ? AND day = ?", (person_id, today)).fetchone()
+        if not check:
+            conn.close()
+            return jsonify({"error": "No check-in found for today, please check in first."}), 400
+        conn.execute(
+            "UPDATE attendance SET check_out_ts = ? WHERE person_id = ? AND day = ?",
+            (timestamp, person_id, today),
+        )
+    else:
+        conn.execute(
+            "INSERT OR IGNORE INTO attendance(person_id, ts, day, location) VALUES (?, ?, ?, ?)",
+            (person_id, timestamp, today, location),
+        )
+    
     conn.commit()
     conn.close()
 
-    return jsonify({"matched": True, "name": name, "distance": best_distance, "timestamp": timestamp, "location": location})
+    return jsonify({"matched": True, "name": name, "distance": best_distance, "timestamp": timestamp, "location": location, "action": action})
 
 
 @app.route("/api/attendance", methods=["GET"])
@@ -207,14 +227,39 @@ def attendance():
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute(
         """
-        SELECT a.ts, p.name, a.location
+        SELECT a.ts, p.name, a.location, a.check_out_ts
         FROM attendance a
         JOIN people p ON a.person_id = p.id
         ORDER BY a.ts DESC
         """
     ).fetchall()
     conn.close()
-    return jsonify([{"name": row[1], "timestamp": row[0], "location": row[2] or "Unknown Location"} for row in rows])
+    return jsonify([{"name": row[1], "timestamp": row[0], "location": row[2] or "Unknown Location", "checkout": row[3]} for row in rows])
+
+
+@app.route("/api/export", methods=["GET"])
+def export_csv():
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute(
+        """
+        SELECT p.name, a.ts, a.check_out_ts, a.day, a.location
+        FROM attendance a
+        JOIN people p ON a.person_id = p.id
+        ORDER BY a.ts DESC
+        """
+    ).fetchall()
+    conn.close()
+    
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(["Name", "Check-in Time", "Check-out Time", "Date", "Location"])
+    for r in rows:
+        cw.writerow([r[0], r[1], r[2] if r[2] else "--", r[3], r[4] or "Unknown Location"])
+        
+    output = io.BytesIO()
+    output.write(si.getvalue().encode('utf-8'))
+    output.seek(0)
+    return send_file(output, mimetype="text/csv", as_attachment=True, download_name=f"attendance_{date.today().isoformat()}.csv")
 
 
 @app.route("/api/health", methods=["GET"])

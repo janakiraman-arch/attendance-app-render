@@ -145,6 +145,29 @@ video {
   display: block;
 }
 
+.scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scan-overlay.scanning {
+  animation: scan 1.5s ease-in-out infinite;
+  opacity: 1;
+}
+
+@keyframes scan {
+  0% { top: 0%; }
+  50% { top: calc(100% - 4px); }
+  100% { top: 0%; }
+}
+
 .hint {
   color: var(--muted);
   margin: 0;
@@ -163,6 +186,15 @@ th, td {
 
 thead tr {
   background: rgba(255,255,255,0.06);
+}
+
+tbody tr {
+  animation: fade-in 0.3s ease-out backwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 tbody tr:nth-child(even) {

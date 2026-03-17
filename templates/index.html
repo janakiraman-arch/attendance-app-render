@@ -33,11 +33,13 @@
           <div class="actions">
             <button id="enrollBtn" class="ghost">Enroll Face</button>
             <button id="checkBtn" class="primary">Check In</button>
+            <button id="checkoutBtn" class="primary" style="background: linear-gradient(135deg, var(--danger) 0%, #ff8c8c 100%);">Check Out</button>
           </div>
         </div>
         <div class="video-wrap">
           <video id="video" autoplay playsinline></video>
           <canvas id="canvas" hidden></canvas>
+          <div id="scanOverlay" class="scan-overlay"></div>
         </div>
         <p class="hint">If prompted, allow camera access in your browser.</p>
       </section>
@@ -52,7 +54,7 @@
         </div>
         <table id="attendanceTable">
           <thead>
-            <tr><th>Name</th><th>Timestamp</th><th>Location</th></tr>
+            <tr><th>Name</th><th>Check-In</th><th>Check-Out</th><th>Location</th></tr>
           </thead>
           <tbody></tbody>
         </table>

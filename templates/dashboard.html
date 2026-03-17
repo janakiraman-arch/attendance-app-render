@@ -101,6 +101,7 @@
             <p class="label">Recent Activity</p>
             <p class="sub">Latest 50 attendance records</p>
           </div>
+          <a href="/api/export" class="pill" style="text-decoration:none; color:var(--text); border:var(--border);">⬇ Download CSV</a>
         </div>
         <div class="table-container">
           <table>
@@ -108,6 +109,7 @@
               <tr>
                 <th>Name</th>
                 <th>Check-in Time</th>
+                <th>Check-out Time</th>
                 <th>Date</th>
                 <th>Location</th>
                 <th>Status</th>
@@ -118,9 +120,14 @@
               <tr>
                 <td style="font-weight: 500;">{{ record[0] }}</td>
                 <td style="color: var(--muted);">{{ record[1].split('T')[1] }}</td>
+                <td style="color: var(--muted);">{{ record[4].split('T')[1] if record[4] else '--' }}</td>
                 <td style="color: var(--muted);">{{ record[2] }}</td>
                 <td style="color: var(--muted);">{{ record[3] or 'Unknown' }}</td>
-                <td><span class="badge">Present</span></td>
+                <td>
+                  <span class="badge" {% if record[4] %}style="background:rgba(255,107,107,0.1);color:var(--danger);border-color:rgba(255,107,107,0.2)"{% endif %}>
+                    {{ 'Completed' if record[4] else 'Present' }}
+                  </span>
+                </td>
               </tr>
               {% else %}
               <tr>
