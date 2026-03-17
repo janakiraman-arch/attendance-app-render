@@ -8,67 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
-  <style>
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 18px;
-      margin-bottom: 24px;
-    }
-    
-    .stat-card {
-      background: var(--panel);
-      border: var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 24px;
-      text-align: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .stat-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    }
-    
-    .stat-value {
-      font-size: 48px;
-      font-weight: 600;
-      color: var(--accent);
-      margin: 10px 0;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    
-    .nav-btn {
-      text-decoration: none;
-      display: inline-block;
-      margin-bottom: 24px;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .badge {
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      background: rgba(109,211,255,0.1);
-      color: var(--accent);
-      border: 1px solid rgba(109,211,255,0.2);
-    }
-  </style>
 </head>
 <body>
   <div class="page">
-    <a href="/" class="nav-btn pill" style="color: var(--muted);">&larr; Back to Camera</a>
+    <a href="/" class="nav-btn pill">&larr; Back to Camera</a>
     
-    <header style="margin-bottom: 32px">
+    <header>
       <div>
         <p class="eyebrow">Analytics Overview</p>
         <h1>Attendance Dashboard</h1>
@@ -89,8 +34,8 @@
       </div>
       <div class="stat-card">
         <p class="label">System Status</p>
-        <div class="stat-value" style="font-size: 32px; margin-top: 18px; margin-bottom: 18px; -webkit-text-fill-color: var(--accent-2);">Online</div>
-        <p class="sub" style="font-size: 13px; color: var(--muted);">Running Smoothly</p>
+        <div class="stat-value" style="font-size: 40px; color: var(--success); -webkit-text-fill-color: var(--success);">Online</div>
+        <p class="sub">Running smoothly</p>
       </div>
     </div>
 
@@ -101,7 +46,7 @@
             <p class="label">Recent Activity</p>
             <p class="sub">Latest 50 attendance records</p>
           </div>
-          <a href="/api/export" class="pill" style="text-decoration:none; color:var(--text); border:var(--border);">⬇ Download CSV</a>
+          <a href="/api/export" class="pill">⬇ Download CSV</a>
         </div>
         <div class="table-container">
           <table>
@@ -118,11 +63,11 @@
             <tbody>
               {% for record in recent_records %}
               <tr>
-                <td style="font-weight: 500;">{{ record[0] }}</td>
-                <td style="color: var(--muted);">{{ record[1].split('T')[1] }}</td>
-                <td style="color: var(--muted);">{{ record[4].split('T')[1] if record[4] else '--' }}</td>
-                <td style="color: var(--muted);">{{ record[2] }}</td>
-                <td style="color: var(--muted);">{{ record[3] or 'Unknown' }}</td>
+                <td style="font-weight: 500; color: #fff;">{{ record[0] }}</td>
+                <td>{{ record[1].split('T')[1] }}</td>
+                <td>{{ record[4].split('T')[1] if record[4] else '--' }}</td>
+                <td>{{ record[2] }}</td>
+                <td>{{ record[3] or 'Unknown' }}</td>
                 <td>
                   <span class="badge" {% if record[4] %}style="background:rgba(255,107,107,0.1);color:var(--danger);border-color:rgba(255,107,107,0.2)"{% endif %}>
                     {{ 'Completed' if record[4] else 'Present' }}
