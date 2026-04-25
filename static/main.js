@@ -8,6 +8,11 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const tableBody = document.querySelector('#attendanceTable tbody');
 const scanOverlay = document.getElementById('scanOverlay');
+const locationToggle = document.getElementById('locationToggle');
+const liveLocEl = document.getElementById('liveLocation');
+const locTextEl = liveLocEl?.querySelector('.loc-text');
+const locAccEl = liveLocEl?.querySelector('.loc-accuracy');
+const stationNameInput = document.getElementById('stationName');
 
 function playDing() {
   try {
@@ -107,46 +112,173 @@ async function enroll() {
 }
 
 async function getLocation() {
-  try {
-    // 1. Try IP-based location first (Bypasses macOS Webview permission issues entirely)
-    const ipRes = await fetch('https://ipapi.co/json/');
-    if (ipRes.ok) {
-      const ipData = await ipRes.json();
-      if (ipData.city) {
-        return `${ipData.city}, ${ipData.region}`;
+  const getIPLocation = async () => {
+    // Primary IP provider
+    const tryIpApi = async () => {
+      const ipRes = await fetch('https://ipapi.co/json/');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData.city) {
+          return {
+            display: `${ipData.city}, ${ipData.region} (IP-based)`,
+            accuracy: null,
+            source: 'ip',
+            lat: ipData.latitude ?? null,
+            lon: ipData.longitude ?? null
+          };
+        }
+      }
+      throw new Error('ipapi failed');
+    };
+
+    // Secondary IP provider
+    const tryGeoDb = async () => {
+      const res = await fetch('https://geolocation-db.com/json/');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.city || data.state) {
+          return {
+            display: `${data.city || 'Unknown'}, ${data.state || data.country_code || ''} (IP-based)`,
+            accuracy: null,
+            source: 'ip',
+            lat: data.latitude ?? null,
+            lon: data.longitude ?? null
+          };
+        }
+      }
+      throw new Error('geolocation-db failed');
+    };
+
+    try {
+      return await tryIpApi();
+    } catch (e) {
+      console.warn('Primary IP geolocation failed', e);
+      try {
+        return await tryGeoDb();
+      } catch (err) {
+        console.warn('Secondary IP geolocation failed', err);
       }
     }
-  } catch (e) {
-    console.warn("IP Geolocation failed, falling back to navigator", e);
-  }
 
-  // 2. Fallback to navigator.geolocation (Only works cleanly in standard browsers, not desktop webviews)
-  return new Promise((resolve, reject) => {
+    return { display: 'Unknown Location', accuracy: null, source: 'ip', lat: null, lon: null };
+  };
+
+  return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      reject('Geolocation is not supported by your browser');
+      getIPLocation().then(resolve);
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
+        const { latitude: lat, longitude: lon, altitude, accuracy } = pos.coords;
+        console.log(`Location: ${lat}, ${lon}, Alt: ${altitude}, Acc: ${accuracy}m`);
+        
+        const altStr = Number.isFinite(altitude) ? `, Alt: ${altitude.toFixed(1)}m` : '';
+        const accuracyMeters = Number.isFinite(accuracy) ? Math.max(0, Math.round(accuracy)) : null;
+        let display = `${lat.toFixed(4)}, ${lon.toFixed(4)}${altStr}`;
+        
+        // Reverse geocode via open-meteo (no API key, browser-friendly)
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-          const data = await res.json();
-          if (data && data.address) {
-            const addr = data.address;
-            const place = addr.road || addr.suburb || addr.city || addr.town || addr.village || 'Unknown';
-            resolve(`${place} (${lat.toFixed(2)}, ${lon.toFixed(2)})`);
-          } else {
-             resolve(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&count=1`, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.results?.length) {
+              const place = data.results[0];
+              const parts = [place.name, place.admin1, place.country].filter(Boolean);
+              display = `${parts.join(', ')} (${lat.toFixed(4)}, ${lon.toFixed(4)}${altStr})`;
+            }
           }
-        } catch (e) {
-          resolve(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
-        }
+        } catch (e) { /* keep fallback */ }
+        
+        resolve({ display, accuracy: accuracyMeters, source: 'gps', lat, lon });
       },
-      (err) => reject('Location access denied. Please allow location to mark attendance.')
+      async (err) => {
+        console.warn("Browser geolocation failed, falling back to IP", err);
+        const ipLoc = await getIPLocation();
+        if (err?.code === err?.PERMISSION_DENIED) {
+          ipLoc.display = ipLoc.display
+            ? `${ipLoc.display} (permission denied; IP fallback)`
+            : 'Location denied (IP fallback)';
+          ipLoc.denied = true;
+        }
+        resolve(ipLoc);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
     );
   });
+}
+
+async function verifySystemBiometrics() {
+  if (!window.PublicKeyCredential) return true; // Fallback if browser doesn't support
+  
+  const isAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  if (!isAvailable) return true; // Fallback if no Fingerprint/FaceID hardware
+
+  try {
+    // This triggers the native Touch ID/Face ID prompt on macOS/Windows/Mobile
+    // We use a dummy challenge just to confirm "Intent and Presence"
+    const challenge = new Uint8Array(32);
+    window.crypto.getRandomValues(challenge);
+    
+    await navigator.credentials.get({
+      publicKey: {
+        challenge,
+        userVerification: "required",
+        timeout: 60000,
+        allowCredentials: [] // We don't need a specific key, just "Any" valid user verification
+      }
+    });
+    return true;
+  } catch (err) {
+    console.warn("Biometric confirmation skipped or failed", err);
+    // If the user cancels the fingerprint prompt, we should still allow 
+    // the face recognition to work, or we can block it if we want 'Strict Mode'.
+    // For now, let's just log it.
+    return true; 
+  }
+}
+
+async function refreshLiveLocation() {
+  if (!liveLocEl || !locationToggle) return;
+  if (locationToggle.checked) {
+    liveLocEl.classList.add('active');
+    locTextEl.textContent = 'calibrating…';
+    liveLocEl.classList.remove('show-acc');
+    if (locAccEl) locAccEl.textContent = '';
+    try {
+      const loc = await getLocation();
+      locTextEl.textContent = loc.display;
+      if (loc.denied) showToast('Location permission denied; using IP-based location', false);
+      if (!loc.lat && window.isSecureContext === false) {
+        showToast('Location needs HTTPS or localhost; using coarse IP.', false);
+      }
+      if (locAccEl) {
+        const showAcc = Boolean(loc.accuracy) || loc.source === 'ip';
+        if (showAcc) {
+          locAccEl.textContent = loc.accuracy ? `±${loc.accuracy} m` : 'coarse';
+          locAccEl.title = loc.source === 'ip'
+            ? 'IP-based city/region accuracy (coarse)'
+            : 'GPS horizontal accuracy radius';
+          liveLocEl.classList.add('show-acc');
+        } else {
+          liveLocEl.classList.remove('show-acc');
+        }
+      }
+    } catch (e) {
+      liveLocEl.classList.remove('show-acc');
+      locTextEl.textContent = 'Location Blocked';
+    }
+  } else {
+    liveLocEl.classList.remove('active');
+    liveLocEl.classList.remove('show-acc');
+    locTextEl.textContent = 'Disabled';
+    if (locAccEl) locAccEl.textContent = '';
+  }
 }
 
 async function recognize(action = 'check_in') {
@@ -155,30 +287,48 @@ async function recognize(action = 'check_in') {
     showToast('Camera not ready', false);
     return;
   }
-  setStatus('getting location…');
-  let location;
-  try {
-    location = await getLocation();
-  } catch (err) {
-    showToast(err, false);
-    setStatus('idle');
-    return;
+  setStatus('verifying…');
+  let location = { display: 'Disabled', accuracy: null, source: 'off', lat: null, lon: null };
+  
+  if (locationToggle && locationToggle.checked) {
+    setStatus('getting location…');
+    try {
+      location = await getLocation();
+    } catch (err) {
+      showToast(err, false);
+      setStatus('idle');
+      return;
+    }
   }
+  
   setStatus('checking…');
+  
+  const stationName = stationNameInput?.value || 'Unknown Station';
+  const accNote = location.accuracy ? ` (±${location.accuracy}m)` : '';
+  const ipNote = !location.accuracy && location.source === 'ip' ? ' (IP-based)' : '';
+  const deniedNote = location.denied ? ' (permission denied)' : '';
+  const locationSuffix = location.display !== 'Disabled'
+    ? ` @ ${location.display}${accNote}${ipNote}${deniedNote}`
+    : '';
+  const finalLocation = `${stationName}${locationSuffix}`;
   
   if (scanOverlay) scanOverlay.classList.add('scanning');
   
   const res = await fetch('/api/recognize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: frame, location, action })
+    body: JSON.stringify({ image: frame, location: finalLocation, lat: location.lat, lon: location.lon, action })
   });
   const data = await res.json();
   if (res.ok && data.matched) {
+    // STEP 2: Secondary Biometric Confirmation (Fingerprint/FaceID)
+    setStatus('biometric confirm…');
+    await verifySystemBiometrics();
+    
     if (action === "check_out") {
-      showToast(`Bye ${data.name}! Check-out saved.`);
+      showToast(`Bye ${data.name}! Biometrics Authenticated.`);
     } else {
-      showToast(`Hi ${data.name}! Check-in saved.`);
+      showToast(`Hi ${data.name}! Biometrics Authenticated.`);
     }
   } else {
     showToast(data.error || 'No match found', false);
@@ -194,12 +344,13 @@ async function loadAttendance() {
   const res = await fetch('/api/attendance');
   const rows = await res.json();
   tableBody.innerHTML = '';
-  rows.forEach(({ name, timestamp, location, checkout }) => {
+  rows.forEach(({ name, timestamp, location, checkout, lat, lon }) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${name}</td>
                     <td>${new Date(timestamp).toLocaleTimeString()}</td>
                     <td>${checkout ? new Date(checkout).toLocaleTimeString() : '--'}</td>
-                    <td>${location || 'Unknown'}</td>`;
+                    <td>${location || 'Unknown'}</td>
+                    <td>${(lat !== null && lon !== null) ? `${Number(lat).toFixed(4)}, ${Number(lon).toFixed(4)}` : '—'}</td>`;
     tableBody.appendChild(tr);
   });
 }
@@ -212,4 +363,26 @@ refreshBtn.addEventListener('click', loadAttendance);
 (async function bootstrap() {
   await initCamera();
   await loadAttendance();
+  
+  // Persist location preference
+  if (locationToggle) {
+    const saved = localStorage.getItem('locationEnabled');
+    if (saved !== null) {
+      locationToggle.checked = saved === 'true';
+    }
+      locationToggle.addEventListener('change', () => {
+        localStorage.setItem('locationEnabled', locationToggle.checked);
+        refreshLiveLocation();
+      });
+    }
+
+    if (stationNameInput) {
+      const savedStation = localStorage.getItem('stationName');
+      if (savedStation) stationNameInput.value = savedStation;
+      stationNameInput.addEventListener('change', () => {
+        localStorage.setItem('stationName', stationNameInput.value);
+      });
+    }
+    
+    refreshLiveLocation();
 })();

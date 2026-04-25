@@ -1,6 +1,9 @@
-opencv-python
+opencv-python-headless
 mediapipe
 numpy
 scipy
 Flask
 face_recognition
+geopy
+requests
+gunicorn
