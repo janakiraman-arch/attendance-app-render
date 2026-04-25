@@ -1,11 +1,7 @@
 services:
   - type: web
     name: attendance-app
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn attendance_app:app
+    env: docker
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.10.12
       - key: PORT
         value: 10000
