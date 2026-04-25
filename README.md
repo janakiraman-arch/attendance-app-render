@@ -1,5 +1,7 @@
 # Smart Attendance System (Face Recognition)
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/janakiraman-arch/attendance-app-render)
+
 A comprehensive AI-powered attendance system with face recognition, real-time analytics, geolocation tracking, and desktop application support.
 
 ## 🚀 Key Features
