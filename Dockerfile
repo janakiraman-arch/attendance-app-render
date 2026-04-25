@@ -1,13 +1,9 @@
-FROM python:3.10-slim
+FROM continuumio/miniconda3
 
 WORKDIR /app
 
-# Install system dependencies required for dlib and OpenCV
-RUN apt-get update && apt-get install -y \
-    cmake \
-    g++ \
-    make \
-    && rm -rf /var/lib/apt/lists/*
+# Install dlib via conda to get pre-compiled binaries
+RUN conda install -y -c conda-forge dlib
 
 # Copy the requirements file and install python dependencies
 COPY requirements.txt .
