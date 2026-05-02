@@ -2,7 +2,7 @@
 FROM python:3.11-slim AS builder
 
 # System deps for dlib / OpenCV
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     build-essential cmake git libopenblas-dev liblapack-dev \
     libx11-dev libgtk-3-dev libboost-python-dev \
     libglib2.0-0 libsm6 libxext6 libxrender-dev \
@@ -18,7 +18,7 @@ RUN pip install --upgrade pip && \
 # ── Stage 2: Lean runtime image ───────────────────────────────────────────────
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libglib2.0-0 libsm6 libxext6 libxrender-dev libopenblas0 liblapack3 \
     && rm -rf /var/lib/apt/lists/*
 
