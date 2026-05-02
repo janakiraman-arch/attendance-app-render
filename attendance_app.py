@@ -156,7 +156,12 @@ def next_finger_id(conn: sqlite3.Connection) -> int:
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("home.html")
+
+
+@app.route("/capture")
+def capture():
+    return render_template("capture.html")
 
 
 @app.route("/dashboard")
@@ -178,11 +183,30 @@ def dashboard():
     conn.close()
     
     return render_template(
-        "dashboard.html", 
+        "dashboard.html",
         total_people=total_people,
         today_attendance=today_attendance,
         recent_records=recent_records
     )
+
+
+@app.route("/people")
+def people_page():
+    conn = sqlite3.connect(DB_PATH)
+    people = conn.execute(
+        """
+        SELECT p.id, p.name, p.encoding, p.finger_id, p.created_at,
+               COUNT(a.id) as checkin_count
+        FROM people p
+        LEFT JOIN attendance a ON a.person_id = p.id
+        GROUP BY p.id
+        ORDER BY p.name
+        """
+    ).fetchall()
+    face_count = sum(1 for r in people if r[2] is not None)
+    finger_count = sum(1 for r in people if r[3] is not None)
+    conn.close()
+    return render_template("people.html", people=people, face_count=face_count, finger_count=finger_count)
 
 
 @app.route("/api/finger/next-id", methods=["GET"])

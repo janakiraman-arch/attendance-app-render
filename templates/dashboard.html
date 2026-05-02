@@ -3,109 +3,145 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard - Smart Attendance</title>
+  <title>Dashboard — Smart Attendance</title>
+  <meta name="description" content="Live attendance analytics dashboard with charts, stats and export.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/layout.css">
+  <link rel="stylesheet" href="/static/pages.css">
 </head>
-<body>
-  <div class="bg-mesh"></div>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
+<body class="page-dashboard">
+  <canvas id="particleCanvas"></canvas>
+  <div class="noise-overlay"></div>
+
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
         <div class="brand-icon">SA</div>
-        <div>
-          <p class="eyebrow">Smart Attendance</p>
-          <p class="brand-title">Ops Dashboard</p>
-        </div>
+        <span class="brand-name">Smart Attendance</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/capture" class="nav-link">Capture</a>
+        <a href="/dashboard" class="nav-link active">Dashboard</a>
+        <a href="/people" class="nav-link">People</a>
       </div>
-      <div class="top-actions">
-        <a href="/" class="chip ghost">&larr; Capture view</a>
-        <a href="/api/export" class="chip primary">Download CSV</a>
+      <a href="/api/export" class="btn-primary nav-cta">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export CSV
+      </a>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-header animate-in">
+      <div>
+        <p class="page-eyebrow">Analytics</p>
+        <h1 class="page-title">Attendance <span class="gradient-text">Dashboard</span></h1>
+        <p class="page-desc">Live numbers for today with the 50 most recent entries.</p>
       </div>
     </div>
 
-    <header class="hero slim">
-      <div class="hero-copy">
-        <p class="eyebrow">Analytics overview</p>
-        <h1>Attendance dashboard</h1>
-        <p class="lede">Live numbers for today with the 50 most recent entries, including location trails.</p>
-      </div>
-      <div class="hero-metrics">
-        <div class="metric-card">
-          <p class="metric-label">Total enrolled</p>
-          <div class="metric-value">{{ total_people }}</div>
-          <p class="metric-sub">Registered faces</p>
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card animate-in" style="--delay:0.1s">
+        <div class="kpi-icon kpi-icon-blue">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         </div>
-        <div class="metric-card">
-          <p class="metric-label">Today</p>
-          <div class="metric-value">{{ today_attendance }}</div>
-          <p class="metric-sub">Check-ins recorded</p>
-        </div>
-        <div class="metric-card">
-          <p class="metric-label">System</p>
-          <div class="metric-value ok">Online</div>
-          <p class="metric-sub">Serving requests</p>
+        <div class="kpi-data">
+          <p class="kpi-label">Total Enrolled</p>
+          <p class="kpi-value">{{ total_people }}</p>
+          <p class="kpi-sub">Registered faces</p>
         </div>
       </div>
-    </header>
+      <div class="kpi-card animate-in" style="--delay:0.2s">
+        <div class="kpi-icon kpi-icon-green">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">Today's Check-ins</p>
+          <p class="kpi-value">{{ today_attendance }}</p>
+          <p class="kpi-sub">Recorded today</p>
+        </div>
+      </div>
+      <div class="kpi-card animate-in" style="--delay:0.3s">
+        <div class="kpi-icon kpi-icon-purple">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">System Status</p>
+          <p class="kpi-value status-ok">Online</p>
+          <p class="kpi-sub">All services running</p>
+        </div>
+      </div>
+      <div class="kpi-card animate-in" style="--delay:0.4s">
+        <div class="kpi-icon kpi-icon-amber">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">Location Mode</p>
+          <p class="kpi-value">GPS+IP</p>
+          <p class="kpi-sub">Dual fallback</p>
+        </div>
+      </div>
+    </div>
 
-    <main>
-      <section class="card table-card full">
-        <div class="card-head">
-          <div>
-            <p class="label">Recent activity</p>
-            <p class="sub">Latest 50 attendance records</p>
-          </div>
-          <div class="actions">
-            <a href="/api/export" class="chip ghost">Export</a>
-          </div>
+    <!-- Records Table -->
+    <section class="glass-card animate-in" style="--delay:0.5s">
+      <div class="card-header">
+        <div>
+          <p class="card-label">RECENT ACTIVITY</p>
+          <p class="card-sub">Latest 50 attendance records</p>
         </div>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Geo</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for record in recent_records %}
-              <tr>
-                <td class="cell-strong">{{ record[0] }}</td>
-                <td>{{ record[1].split('T')[1] }}</td>
-                <td>{{ record[4].split('T')[1] if record[4] else '--' }}</td>
-                <td>{{ record[2] }}</td>
-                <td>{{ record[3] or 'Unknown' }}</td>
-                <td>
-                  {% if record[5] and record[6] %}
-                    {{ '%.4f'|format(record[5]) }}, {{ '%.4f'|format(record[6]) }}
-                  {% else %}
-                    —
-                  {% endif %}
-                </td>
-                <td>
-                  <span class="badge {% if record[4] %}danger{% else %}success{% endif %}">
-                    {{ 'Completed' if record[4] else 'Present' }}
-                  </span>
-                </td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="7" class="empty-row">No records found.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="card-actions">
+          <a href="/api/export" class="btn-ghost-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export
+          </a>
         </div>
-      </section>
-    </main>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Date</th>
+              <th>Location</th>
+              <th>Geo</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in recent_records %}
+            <tr class="table-row-animate">
+              <td class="cell-name">{{ record[0] }}</td>
+              <td class="cell-time">{{ record[1].split('T')[1] }}</td>
+              <td class="cell-time">{{ record[4].split('T')[1] if record[4] else '—' }}</td>
+              <td>{{ record[2] }}</td>
+              <td>{{ record[3] or 'Unknown' }}</td>
+              <td class="cell-geo">
+                {% if record[5] and record[6] %}
+                  {{ '%.4f'|format(record[5]) }}, {{ '%.4f'|format(record[6]) }}
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                <span class="status-badge {% if record[4] %}badge-completed{% else %}badge-present{% endif %}">
+                  {{ 'Completed' if record[4] else 'Present' }}
+                </span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="empty-cell">No records found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
+
+  <script src="/static/home.js"></script>
 </body>
 </html>

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Attendance — Biometric Check-In System</title>
+  <meta name="description" content="Enterprise-grade face recognition attendance with geo-locking and biometric confirm.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/layout.css">
+  <link rel="stylesheet" href="/static/pages.css">
+</head>
+<body class="page-home">
+  <canvas id="particleCanvas"></canvas>
+  <div class="noise-overlay"></div>
+
+  <!-- NAV -->
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <div class="brand-icon">SA</div>
+        <span class="brand-name">Smart Attendance</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link active">Home</a>
+        <a href="/capture" class="nav-link">Capture</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/people" class="nav-link">People</a>
+      </div>
+      <a href="/capture" class="btn-primary nav-cta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge animate-in" style="--delay:0.1s">
+        <span class="badge-dot"></span>
+        System Online — Real-time Biometric
+      </div>
+      <h1 class="hero-title animate-in" style="--delay:0.2s">
+        Next-Gen<br>
+        <span class="gradient-text">Attendance</span><br>
+        Intelligence
+      </h1>
+      <p class="hero-desc animate-in" style="--delay:0.35s">
+        Face capture, geo-locking, and biometric confirm in one seamless operator console. Built for scale, designed for simplicity.
+      </p>
+      <div class="hero-actions animate-in" style="--delay:0.5s">
+        <a href="/capture" class="btn-primary btn-lg">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          Start Check-In
+        </a>
+        <a href="/dashboard" class="btn-ghost btn-lg">View Dashboard →</a>
+      </div>
+    </div>
+    <div class="hero-visual animate-in" style="--delay:0.25s">
+      <div class="visual-ring ring-1"></div>
+      <div class="visual-ring ring-2"></div>
+      <div class="visual-ring ring-3"></div>
+      <div class="visual-core">
+        <div class="scan-face">
+          <div class="face-grid"></div>
+          <div class="scan-line"></div>
+          <div class="face-nodes">
+            <div class="node" style="top:28%;left:30%"></div>
+            <div class="node" style="top:28%;left:68%"></div>
+            <div class="node" style="top:50%;left:50%"></div>
+            <div class="node" style="top:65%;left:38%"></div>
+            <div class="node" style="top:65%;left:62%"></div>
+          </div>
+        </div>
+        <div class="core-status">BIOMETRIC ACTIVE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-section animate-in" style="--delay:0.6s">
+    <div class="stat-item">
+      <div class="stat-num" data-target="1.2">0</div>
+      <div class="stat-unit">sec</div>
+      <div class="stat-label">Median Capture</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num" data-target="99.4">0</div>
+      <div class="stat-unit">%</div>
+      <div class="stat-label">Recognition Accuracy</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num" data-target="2">0</div>
+      <div class="stat-unit">-step</div>
+      <div class="stat-label">Security Protocol</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">GPS+IP</div>
+      <div class="stat-label">Location Tracking</div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features-section">
+    <div class="section-header animate-in">
+      <p class="section-eyebrow">Capabilities</p>
+      <h2 class="section-title">Everything you need<br>in one console</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card animate-in" style="--delay:0.1s">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <h3>Face Recognition</h3>
+        <p>Sub-second biometric matching with 128-dimension face encoding for unmatched precision.</p>
+      </div>
+      <div class="feature-card animate-in" style="--delay:0.2s">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3>Geo-Locking</h3>
+        <p>GPS + IP-based location anchoring ensures check-ins only happen where they should.</p>
+      </div>
+      <div class="feature-card animate-in" style="--delay:0.3s">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3>Duplicate Guard</h3>
+        <p>3-minute window lock prevents accidental double check-ins with smart conflict resolution.</p>
+      </div>
+      <div class="feature-card animate-in" style="--delay:0.4s">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <h3>Live Analytics</h3>
+        <p>Real-time dashboard with attendance trends, location trails, and CSV exports.</p>
+      </div>
+      <div class="feature-card animate-in" style="--delay:0.5s">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </div>
+        <h3>People Management</h3>
+        <p>Enroll, edit, and manage staff biometrics with an intuitive admin interface.</p>
+      </div>
+      <div class="feature-card animate-in" style="--delay:0.6s">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </div>
+        <h3>CSV Export</h3>
+        <p>One-click export of complete attendance logs with timestamps, dates, and coordinates.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section animate-in">
+    <div class="cta-glow"></div>
+    <p class="section-eyebrow">Ready?</p>
+    <h2 class="cta-title">Start tracking attendance<br>the smart way</h2>
+    <div class="cta-actions">
+      <a href="/capture" class="btn-primary btn-lg">Open Capture Console</a>
+      <a href="/dashboard" class="btn-ghost btn-lg">View Analytics</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <div class="brand-icon small">SA</div>
+      <span>Smart Attendance</span>
+    </div>
+    <p class="footer-copy">Secure · Automated · Precise</p>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/capture">Capture</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/people">People</a>
+    </div>
+  </footer>
+
+  <script src="/static/home.js"></script>
+</body>
+</html>

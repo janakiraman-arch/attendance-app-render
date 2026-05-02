@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capture — Smart Attendance</title>
+  <meta name="description" content="Live face capture console for biometric attendance check-in and check-out.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/layout.css">
+  <link rel="stylesheet" href="/static/pages.css">
+</head>
+<body class="page-capture">
+  <canvas id="particleCanvas"></canvas>
+  <div class="noise-overlay"></div>
+
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <div class="brand-icon">SA</div>
+        <span class="brand-name">Smart Attendance</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/capture" class="nav-link active">Capture</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/people" class="nav-link">People</a>
+      </div>
+      <div class="nav-status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">idle</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-header animate-in">
+      <div>
+        <p class="page-eyebrow">Live Console</p>
+        <h1 class="page-title">Capture <span class="gradient-text">Center</span></h1>
+        <p class="page-desc">Center the face, keep lighting even, and wait for the ring to settle.</p>
+      </div>
+      <div class="header-controls">
+        <label class="control-chip">
+          <span class="chip-label">Station</span>
+          <input type="text" id="stationName" value="Main Entrance">
+        </label>
+        <label class="toggle-chip">
+          <input type="checkbox" id="locationToggle" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="chip-label">Precise GPS</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="capture-layout">
+      <!-- Camera Card -->
+      <section class="glass-card camera-card animate-in" style="--delay:0.1s">
+        <div class="card-header">
+          <div>
+            <p class="card-label">LIVE FEED</p>
+            <p class="card-sub">Biometric capture station</p>
+          </div>
+          <div class="card-actions">
+            <button id="enrollBtn" class="btn-ghost-sm">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+              Enroll Face
+            </button>
+          </div>
+        </div>
+
+        <div class="camera-shell">
+          <div class="camera-wrap" id="cameraWrap">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" hidden></canvas>
+            <div id="scanOverlay" class="scan-overlay">
+              <div class="hud-corners">
+                <div class="hud-corner tl"></div>
+                <div class="hud-corner tr"></div>
+                <div class="hud-corner bl"></div>
+                <div class="hud-corner br"></div>
+              </div>
+              <div class="hud-ring"></div>
+              <div class="hud-scanline"></div>
+              <div class="hud-labels">
+                <span class="hud-tag tl-tag">SCANNING</span>
+                <span class="hud-tag tr-tag">BIO-0x8A</span>
+                <span class="hud-tag bl-tag">FACE-MATCH</span>
+                <span class="hud-tag br-tag">SECURE-ID</span>
+              </div>
+            </div>
+            <div class="camera-idle-state" id="cameraIdle">
+              <div class="idle-icon">
+                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.259a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+              </div>
+              <p>Camera will activate on action</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button id="checkBtn" class="btn-primary action-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+            Check In
+          </button>
+          <button id="checkoutBtn" class="btn-outline action-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
+            Check Out
+          </button>
+        </div>
+
+        <div class="location-strip" id="liveLocation">
+          <div class="loc-icon">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <span class="loc-label">LOCATION</span>
+          <span class="loc-text" id="locText">Disabled</span>
+          <span class="loc-acc" id="locAcc"></span>
+        </div>
+      </section>
+
+      <!-- Table Card -->
+      <section class="glass-card table-card animate-in" style="--delay:0.2s">
+        <div class="card-header">
+          <div>
+            <p class="card-label">TODAY'S LOG</p>
+            <p class="card-sub">Latest check-ins with location trail</p>
+          </div>
+          <button id="refreshBtn" class="btn-ghost-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table id="attendanceTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Location</th>
+                <th>Geo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="table-hint">One entry per person per day.</p>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="/static/main.js"></script>
+  <script src="/static/home.js"></script>
+</body>
+</html>

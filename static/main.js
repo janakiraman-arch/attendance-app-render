@@ -1,6 +1,7 @@
 const videoEl = document.getElementById('video');
 const canvasEl = document.getElementById('canvas');
-const statusEl = document.getElementById('status');
+const statusDot = document.getElementById('statusDot');
+const statusTextEl = document.getElementById('statusText');
 const toastEl = document.getElementById('toast');
 const enrollBtn = document.getElementById('enrollBtn');
 const checkBtn = document.getElementById('checkBtn');
@@ -11,8 +12,9 @@ const scanOverlay = document.getElementById('scanOverlay');
 const locationToggle = document.getElementById('locationToggle');
 const liveLocEl = document.getElementById('liveLocation');
 const locTextEl = liveLocEl?.querySelector('.loc-text');
-const locAccEl = liveLocEl?.querySelector('.loc-accuracy');
+const locAccEl = liveLocEl?.querySelector('.loc-acc');
 const stationNameInput = document.getElementById('stationName');
+const cameraIdle = document.getElementById('cameraIdle');
 
 function playDing() {
   try {
@@ -34,7 +36,10 @@ function playDing() {
 }
 
 function setStatus(text) {
-  statusEl.textContent = text;
+  if (statusTextEl) statusTextEl.textContent = text;
+  if (statusDot) {
+    statusDot.classList.toggle('live', text !== 'idle');
+  }
 }
 
 function showToast(message, ok = true) {
@@ -62,6 +67,7 @@ async function initCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     videoEl.srcObject = stream;
+    if (cameraIdle) cameraIdle.style.display = 'none';
     return true;
   } catch (err) {
     console.error(err);

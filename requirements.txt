@@ -7,3 +7,5 @@ face_recognition
 geopy
 requests
 gunicorn
+pywebview
+pyinstaller

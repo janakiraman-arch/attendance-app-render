@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>People — Smart Attendance</title>
+  <meta name="description" content="Manage enrolled people and biometric profiles in Smart Attendance.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/layout.css">
+  <link rel="stylesheet" href="/static/pages.css">
+</head>
+<body class="page-people">
+  <canvas id="particleCanvas"></canvas>
+  <div class="noise-overlay"></div>
+
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <div class="brand-icon">SA</div>
+        <span class="brand-name">Smart Attendance</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/capture" class="nav-link">Capture</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/people" class="nav-link active">People</a>
+      </div>
+      <a href="/capture" class="btn-primary nav-cta">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+        Enroll New
+      </a>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-header animate-in">
+      <div>
+        <p class="page-eyebrow">Management</p>
+        <h1 class="page-title">People <span class="gradient-text">Registry</span></h1>
+        <p class="page-desc">All enrolled biometric profiles and their attendance history.</p>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card animate-in" style="--delay:0.1s">
+        <div class="kpi-icon kpi-icon-blue">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">Total People</p>
+          <p class="kpi-value">{{ people | length }}</p>
+          <p class="kpi-sub">Enrolled profiles</p>
+        </div>
+      </div>
+      <div class="kpi-card animate-in" style="--delay:0.2s">
+        <div class="kpi-icon kpi-icon-green">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">Face Enrolled</p>
+          <p class="kpi-value">{{ face_count }}</p>
+          <p class="kpi-sub">With face encoding</p>
+        </div>
+      </div>
+      <div class="kpi-card animate-in" style="--delay:0.3s">
+        <div class="kpi-icon kpi-icon-purple">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">Fingerprint</p>
+          <p class="kpi-value">{{ finger_count }}</p>
+          <p class="kpi-sub">With fingerprint ID</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="glass-card animate-in" style="--delay:0.4s">
+      <div class="card-header">
+        <div>
+          <p class="card-label">ENROLLED PROFILES</p>
+          <p class="card-sub">All registered biometric identities</p>
+        </div>
+        <a href="/capture" class="btn-ghost-sm">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          Add Person
+        </a>
+      </div>
+      <div class="people-grid">
+        {% for person in people %}
+        <div class="person-card animate-in" style="--delay:{{ loop.index * 0.05 }}s">
+          <div class="person-avatar">
+            {{ person[1][0] | upper }}
+          </div>
+          <div class="person-info">
+            <p class="person-name">{{ person[1] }}</p>
+            <p class="person-meta">
+              {% if person[2] %}<span class="meta-tag face-tag">Face</span>{% endif %}
+              {% if person[3] %}<span class="meta-tag finger-tag">Fingerprint #{{ person[3] }}</span>{% endif %}
+            </p>
+            <p class="person-date">Enrolled {{ person[4][:10] }}</p>
+          </div>
+          <div class="person-stats">
+            <span class="person-checkins">{{ person[5] or 0 }} check-ins</span>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </div>
+          <p>No people enrolled yet.</p>
+          <a href="/capture" class="btn-primary">Enroll First Person</a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/home.js"></script>
+</body>
+</html>
