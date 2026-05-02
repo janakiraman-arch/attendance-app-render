@@ -159,6 +159,16 @@ def index():
     return render_template("home.html")
 
 
+@app.route("/manifest.json")
+def manifest():
+    return app.send_static_file("manifest.json")
+
+
+@app.route("/sw.js")
+def service_worker():
+    return app.send_static_file("sw.js")
+
+
 @app.route("/capture")
 def capture():
     return render_template("capture.html")

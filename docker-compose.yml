@@ -1,0 +1,27 @@
+# Docker compose for local testing + self-hosting
+version: "3.9"
+
+services:
+  attendance-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-attendance
+    ports:
+      - "10000:10000"
+    environment:
+      - PORT=10000
+      - HOST=0.0.0.0
+      - DUP_WINDOW_MIN=3
+    volumes:
+      - attendance_data:/app/attendance.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  attendance_data:

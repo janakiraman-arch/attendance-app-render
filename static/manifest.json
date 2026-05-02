@@ -1,0 +1,17 @@
+{
+  "name": "Smart Attendance",
+  "short_name": "Attendance",
+  "description": "Enterprise-grade face recognition attendance with geo-locking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/assets/app_icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}

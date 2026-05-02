@@ -1,0 +1,21 @@
+# Koyeb deployment config
+name: smart-attendance
+type: web
+ports:
+  - port: 10000
+    protocol: http
+healthchecks:
+  - path: /api/health
+    port: 10000
+    interval: 60
+    timeout: 5
+scalings:
+  min: 0
+  max: 1
+env:
+  - key: PORT
+    value: "10000"
+  - key: HOST
+    value: "0.0.0.0"
+  - key: DUP_WINDOW_MIN
+    value: "3"

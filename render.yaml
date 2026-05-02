@@ -1,7 +1,14 @@
 services:
   - type: web
-    name: attendance-app
+    name: smart-attendance
     env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
     envVars:
       - key: PORT
         value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: DUP_WINDOW_MIN
+        value: 3

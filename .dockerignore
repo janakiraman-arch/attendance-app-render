@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.py[cod]
+*.pyo
+.Python
+*.egg-info
+
+# Virtual envs
+.venv
+venv
+env
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Local dev / desktop
+desktop_app.py
+main.py
+config.py
+detectors.py
+location_utils.py
+*.clangd
+.kilocode
+
+# IDE
+.vscode
+.idea
+
+# macOS
+.DS_Store
+
+# Docs
+docs/
+README.md
