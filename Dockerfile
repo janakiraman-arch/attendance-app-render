@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /install
 COPY requirements.txt .
+# Limit CMAKE build threads to prevent OOM on free tier build servers
+ENV CMAKE_BUILD_PARALLEL_LEVEL=1
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
