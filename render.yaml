@@ -1,7 +1,7 @@
 services:
   - type: web
     name: smart-attendance
-    env: docker
+    runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /api/health
